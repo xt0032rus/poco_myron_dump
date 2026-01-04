@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    1. thermal-boost.conf_modified and thermalbreakboostconfig.xml merged this file; we can modify thermalbreak info only in this file. 
+    2. there are two thermlbreak scenario; PerfhintBreak: like launch、scroll boost; ProcessBreak:like camera boost.
+    2. For PerfhintBreak, the key is hintid、hinttype、scence(for cust applist) and temperature; when we get these info we can get target thermalbreak param 
+    3. For ProcessBreak, the key is processname and temperature; when we get these info we can get target thermalbreak param
+    4. we can also modify Temperature; ex: if only one Temperature use one hermalbreak param  at all temperatures;
+       otherwise if we set temperature list like 35、37、39、41、45； when board_sensor_temperature < 35 take 35, when 35 <= board_sensor_temperature < 37 take 35,
+       when 45 <= board_sensor_temperature take 45.
+    5. target0 represents performance mode，target1 represents balanced mode，target2 represents power mode
+-->
+<ThermalBreakConfigs>
+	<!--Perfhint thermalbreak config-->
+	<PerfhintBreak>
+		<!--Lightening_Launches_Lite Base (default) break-->
+        <Config Id="0x00001081" Type="1, 10" Scence="0">
+			<Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"
+                Target1="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"
+                Target2="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"/>
+            <Breakinfo Temperature="40000"
+                Target0="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"
+                Target1="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"
+                Target2="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"/>
+            <Breakinfo Temperature="44000"
+                Target0="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"
+                Target1="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"
+                Target2="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"/>
+            <Breakinfo Temperature="48000"
+                Target0="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target1="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target2="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"/>
+        </Config>
+		<!--Lightening_Launches_Lite App Launch (default) break-->
+        <Config Id="0x00001081" Type="2" Scence="0">
+			<Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:2496000 cpu6:3398400 cpumask:ff"
+                Target1="boost:1 cpu0:2496000 cpu6:3398400 cpumask:ff"
+                Target2="boost:1 cpu0:2496000 cpu6:3398400 cpumask:ff"/>
+            <Breakinfo Temperature="40000"
+                Target0="boost:1 cpu0:2496000 cpu6:2438400 cpumask:ff"
+                Target1="boost:1 cpu0:2496000 cpu6:2438400 cpumask:ff"
+                Target2="boost:1 cpu0:2496000 cpu6:2438400 cpumask:ff"/>
+            <Breakinfo Temperature="44000"
+                Target0="boost:1 cpu0:1996800 cpu6:2227200 cpumask:ff"
+                Target1="boost:1 cpu0:1996800 cpu6:2227200 cpumask:ff"
+                Target2="boost:1 cpu0:1996800 cpu6:2227200 cpumask:ff"/>
+            <Breakinfo Temperature="48000"
+                Target0="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target1="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target2="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"/>
+        </Config>
+		<!--Lightening_Launches_Lite Game Launch (default) break-->
+		<!--Activity lauch break-->
+        <Config Id="0x00001081" Type="3" Scence="0">
+			<Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:2784000 cpu6:4089600 cpumask:ff"
+                Target1="boost:1 cpu0:2784000 cpu6:4089600 cpumask:ff"
+                Target2="boost:1 cpu0:2784000 cpu6:4089600 cpumask:ff"/>
+        </Config>
+        <!--Camera resume break-->
+        <Config Id="0x00001081" Type="201" Scence="0">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3552000 cpu6:4089600"
+                Target1="boost:1 cpu0:3552000 cpu6:4089600"
+                Target2="boost:1 cpu0:3552000 cpu6:4089600"/>
+        </Config>
+        <!--App resume break-->
+        <Config Id="0x00001082" Type="1, 2" Scence="0">
+			<Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"
+                Target1="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"
+                Target2="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"/>
+            <Breakinfo Temperature="40000"
+                Target0="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"
+                Target1="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"
+                Target2="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"/>
+            <Breakinfo Temperature="44000"
+                Target0="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"
+                Target1="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"
+                Target2="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"/>
+            <Breakinfo Temperature="48000"
+                Target0="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target1="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target2="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"/>
+        </Config>
+		<!--Animation break-->
+		<Config Id="0x00001083" Type="-1" Scence="0">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"
+                Target1="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"
+                Target2="boost:1 cpu0:3513600 cpu6:4185600 cpumask:ff"/>
+            <Breakinfo Temperature="40000"
+                Target0="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"
+                Target1="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"
+                Target2="boost:1 cpu0:2745600 cpu6:3398400 cpumask:ff"/>
+            <Breakinfo Temperature="44000"
+                Target0="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"
+                Target1="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"
+                Target2="boost:1 cpu0:2227200 cpu6:3129600 cpumask:ff"/>
+            <Breakinfo Temperature="48000"
+                Target0="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target1="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"
+                Target2="boost:1 cpu0:1552000 cpu6:1497600 cpumask:ff"/>
+        </Config>
+		<!--ROTATION_LATENCY break-->
+		<Config Id="0x00001089" Type="-1" Scence="0">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3513600 cpu6:4089600 cpumask:ff"
+                Target1="boost:1 cpu0:3513600 cpu6:4089600 cpumask:ff"
+                Target2="boost:1 cpu0:3513600 cpu6:4089600 cpumask:ff"/>
+        </Config>
+		<!--BluetoothApp break-->
+		<Config Id="0x000011C0" Type="1" Scence="0">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:2611200 cpu6:2630400"
+                Target1="boost:1 cpu0:2611200 cpu6:2630400"
+                Target2="boost:1 cpu0:2611200 cpu6:2323200"/>
+        </Config>
+		<!--pull_down_status_bar break-->
+		<Config Id="0x000011A0" Type="1" Scence="0">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:2438400 cpu6:2572800 cpumask:ff"
+                Target1="boost:1 cpu0:2438400 cpu6:2572800 cpumask:ff"
+                Target2="boost:1 cpu0:2438400 cpu6:2572800 cpumask:ff"/>
+        </Config>
+        <!-- Silky_Scrolls_Lite: Scroll Break (Heavy)-->
+		<!-- Silky_Scrolls_Lite: Scroll Break (Medium)-->
+		<!-- Silky_Scrolls_Lite: Scroll Break (Light)-->
+        <Config Id="0x00001080" Type="1,2,3" Scence="0">
+            <Breakinfo Temperature="35000"
+                Target0="boost:1 cpu0:2784000 cpu6:4089600"
+                Target1="boost:1 cpu0:2784000 cpu6:4089600"
+                Target2="boost:1 cpu0:2784000 cpu6:3072000"/>
+            <Breakinfo Temperature="37000"
+                Target0="boost:1 cpu0:2784000 cpu6:2649600"
+                Target1="boost:1 cpu0:2784000 cpu6:2649600 "
+                Target2="boost:1 cpu0:2784000 cpu6:2438400"/>
+            <Breakinfo Temperature="39000"
+                Target0="boost:1 cpu0:2400000 cpu6:2246400"
+                Target1="boost:1 cpu0:2400000 cpu6:2246400"
+                Target2="boost:1 cpu0:2400000 cpu6:2246400"/>
+            <Breakinfo Temperature="41000"
+                Target0="boost:1 cpu0:1996800 cpu6:1958400"
+                Target1="boost:1 cpu0:1996800 cpu6:1958400"
+                Target2="boost:1 cpu0:1996800 cpu6:1958400"/>
+            <Breakinfo Temperature="45000"
+                Target0="boost:1 cpu0:1555200 cpu6:1401600"
+                Target1="boost:1 cpu0:1555200 cpu6:1401600"
+                Target2="boost:1 cpu0:1555200 cpu6:1401600"/>
+        </Config>
+        <Config Id="0x00001080" Type="1,2,3" Scence="1">
+            <Breakinfo Temperature="35000"
+                Target0="boost:1 cpu0:2784000 cpu6:4089600"
+                Target1="boost:1 cpu0:2784000 cpu6:4089600"
+                Target2="boost:1 cpu0:2784000 cpu6:3072000"/>
+            <Breakinfo Temperature="37000"
+                Target0="boost:1 cpu0:2784000 cpu6:2649600"
+                Target1="boost:1 cpu0:2784000 cpu6:2649600 "
+                Target2="boost:1 cpu0:2784000 cpu6:2438400"/>
+            <Breakinfo Temperature="39000"
+                Target0="boost:1 cpu0:2400000 cpu6:2246400"
+                Target1="boost:1 cpu0:2400000 cpu6:2246400"
+                Target2="boost:1 cpu0:2400000 cpu6:2246400"/>
+            <Breakinfo Temperature="41000"
+                Target0="boost:1 cpu0:1996800 cpu6:1958400"
+                Target1="boost:1 cpu0:1996800 cpu6:1958400"
+                Target2="boost:1 cpu0:1996800 cpu6:1958400"/>
+            <Breakinfo Temperature="45000"
+                Target0="boost:1 cpu0:1555200 cpu6:1401600"
+                Target1="boost:1 cpu0:1555200 cpu6:1401600"
+                Target2="boost:1 cpu0:1555200 cpu6:1401600"/>
+        </Config>
+		<!--Folded Vertical Scroll break-->
+		<!--Folded Horizontal Scroll break-->
+		<Config Id="0x00001080" Type="101,102" Scence="0">
+            <Breakinfo Temperature="35000"
+                Target0="boost:1 cpu0:2784000 cpu6:3283200"
+                Target1="boost:1 cpu0:2400000 cpu6:3072000"
+                Target2="boost:1 cpu0:2400000 cpu6:3072000"/>
+            <Breakinfo Temperature="37000"
+                Target0="boost:1 cpu0:2784000 cpu6:2649600"
+                Target1="boost:1 cpu0:2400000 cpu6:2438400"
+                Target2="boost:1 cpu0:2400000 cpu6:2438400"/>
+            <Breakinfo Temperature="39000"
+                Target0="boost:1 cpu0:2400000 cpu6:2246400"
+                Target1="boost:1 cpu0:2400000 cpu6:2246400"
+                Target2="boost:1 cpu0:2400000 cpu6:2246400"/>
+            <Breakinfo Temperature="41000"
+                Target0="boost:1 cpu0:1996800 cpu6:1958400"
+                Target1="boost:1 cpu0:1996800 cpu6:1958400"
+                Target2="boost:1 cpu0:1996800 cpu6:1958400"/>
+            <Breakinfo Temperature="45000"
+                Target0="boost:1 cpu0:1555200 cpu6:1401600"
+                Target1="boost:1 cpu0:1555200 cpu6:1401600"
+                Target2="boost:1 cpu0:1555200 cpu6:1401600"/>
+        </Config>
+        <!--touch break-->
+        <Config Id="0x00001085" Type="1" Scence="1">
+            <Breakinfo Temperature="35000"
+                Target0="boost:1 cpu0:2784000 cpu6:4089600"
+                Target1="boost:1 cpu0:2784000 cpu6:4089600"
+                Target2="boost:1 cpu0:2784000 cpu6:3072000"/>
+            <Breakinfo Temperature="37000"
+                Target0="boost:1 cpu0:2784000 cpu6:2649600"
+                Target1="boost:1 cpu0:2784000 cpu6:2649600"
+                Target2="boost:1 cpu0:2784000 cpu6:2438400"/>
+            <Breakinfo Temperature="39000"
+                Target0="boost:1 cpu0:2400000 cpu6:2246400"
+                Target1="boost:1 cpu0:2400000 cpu6:2246400"
+                Target2="boost:1 cpu0:2400000 cpu6:2246400"/>
+            <Breakinfo Temperature="41000"
+                Target0="boost:1 cpu0:1996800 cpu6:1958400"
+                Target1="boost:1 cpu0:1996800 cpu6:1958400"
+                Target2="boost:1 cpu0:1996800 cpu6:1958400"/>
+            <Breakinfo Temperature="45000"
+                Target0="boost:1 cpu0:1555200 cpu6:1401600"
+                Target1="boost:1 cpu0:1555200 cpu6:1401600"
+                Target2="boost:1 cpu0:1555200 cpu6:1401600"/>
+        </Config>
+    </PerfhintBreak>
+	<!--Process thermalbreak config-->
+    <ProcessBreak>
+		<Config Process="mfp-daemon">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:2611200 cpu6:4089600"
+                Target1="boost:1 cpu0:2611200 cpu6:4089600"
+                Target2="boost:1 cpu0:2438400 cpu6:3782400"/>
+        </Config>
+		<Config Process="vendor.qti.camera.provider-service_64">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3552000 cpu6:4089600"
+                Target1="boost:1 cpu0:3552000 cpu6:4089600"
+                Target2="boost:1 cpu0:3552000 cpu6:4089600"/>
+        </Config>
+        <Config Process="com.android.camera">
+            <Breakinfo Temperature="25000"
+                Target0="boost:1 cpu0:3552000 cpu6:4089600 cpumask:ff"
+                Target1="boost:1 cpu0:3552000 cpu6:4089600 cpumask:ff"
+                Target2="boost:1 cpu0:3552000 cpu6:4089600 cpumask:ff"/>
+        </Config>
+    </ProcessBreak>
+</ThermalBreakConfigs>

@@ -1,0 +1,9 @@
+#####################################################################
+Date              Source file name                   Target file name
+
+2025/05/23        DXS702V300R001C007                 s702_firmware.bin
+2025/05/27        DXS702V300C004                     s702_firmware.bin (S+L-firmwareXM)
+2025/06/13        DXS702V300C005                     s702_firmware.bin (S+L-firmwareXM)
+2025/07/06        DXS702V300C007                     s702_firmware.bin (S+L-firmwareXM)
+2025/07/21        DXS702V300C008                     s702_firmware.bin (S+L-firmwareXM)
+2025/08/08        DXS702V300C009                     s702_firmware.bin (S+L-firmwareXM)

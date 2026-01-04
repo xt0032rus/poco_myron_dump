@@ -1,0 +1,16 @@
+libAIHDIcon.so
+libqti-perfd-client.so
+libadsprpc.so
+libcdsprpc.so
+libsdsprpc.so
+libfastcvopt.so
+libOpenCL.so
+libSNPE.so
+libmialgo_utils.so
+libxmi_slow_motion_mein.so
+libmiocr.so
+libmiphone_capture_bokeh.so
+libanc_single_bokeh.so
+libmiphone_dualcam_depth_aideploy.so
+libSEGModel.so
+libmi266.so
