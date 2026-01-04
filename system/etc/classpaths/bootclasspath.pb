@@ -1,0 +1,93 @@
+
+#
+/system/framework/framework.jar
+#
+/system/framework/framework.jar
+0
+(/system/framework/framework-graphics.jar36
+0
+(/system/framework/framework-graphics.jar36
+0
+(/system/framework/framework-location.jar36
+0
+(/system/framework/framework-location.jar36
+
+/system/framework/ext.jar
+
+/system/framework/ext.jar
+*
+&/system/framework/telephony-common.jar
+*
+&/system/framework/telephony-common.jar
+%
+!/system/framework/voip-common.jar
+%
+!/system/framework/voip-common.jar
+$
+ /system/framework/ims-common.jar
+$
+ /system/framework/ims-common.jar
+E
+=/system/framework/framework-ondeviceintelligence-platform.jar36
+E
+=/system/framework/framework-ondeviceintelligence-platform.jar36
++
+#/system/framework/framework-nfc.jar36
++
+#/system/framework/framework-nfc.jar36
+"
+/system/framework/tcmiface.jar
+"
+/system/framework/tcmiface.jar
+'
+#/system/framework/telephony-ext.jar
+'
+#/system/framework/telephony-ext.jar
+&
+"/system/framework/QPerformance.jar
+&
+"/system/framework/QPerformance.jar
+'
+#/system/framework/UxPerformance.jar
+'
+#/system/framework/UxPerformance.jar
+#
+/system/framework/WfdCommon.jar
+#
+/system/framework/WfdCommon.jar
+,
+(/system_ext/framework/miui-framework.jar
+,
+(/system_ext/framework/miui-framework.jar
+3
+//system_ext/framework/miui-telephony-common.jar
+3
+//system_ext/framework/miui-telephony-common.jar
+1
+-/system_ext/framework/miui-enterprise-sdk.jar
+1
+-/system_ext/framework/miui-enterprise-sdk.jar
+.
+*/system_ext/framework/xiaomi-framework.jar
+.
+*/system_ext/framework/xiaomi-framework.jar
+1
+-/system_ext/framework/xm-telephony-common.jar
+1
+-/system_ext/framework/xm-telephony-common.jar
+/
++/system_ext/framework/xm-telephony-base.jar
+/
++/system_ext/framework/xm-telephony-base.jar
+9
+5/system_ext/framework/xm-framework-telephony-aidl.jar
+9
+5/system_ext/framework/xm-framework-telephony-aidl.jar
+I
+E/system_ext/framework/vendor.xiaomi.hardware.videoservice-V8-java.jar
+I
+E/system_ext/framework/vendor.xiaomi.hardware.videoservice-V8-java.jar
+1
+-/apex/com.android.i18n/javalib/core-icu4j.jar
+1
+-/apex/com.android.i18n/javalib/core-icu4j.jar
