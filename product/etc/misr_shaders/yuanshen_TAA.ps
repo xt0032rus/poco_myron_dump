@@ -1,0 +1,66 @@
+#ifdef GL_OES_sample_variables
+#extension GL_OES_sample_variables : enable
+#endif
+
+precision highp float;
+precision highp int;
+uniform 	vec4 _MainTex_TexelSize;
+uniform 	vec4 _Jitter;
+uniform 	mediump vec4 _FinalBlendParameters;
+uniform 	mediump vec4 _Sharpness;
+uniform 	int _DisableSkipTAAMark;
+uniform highp sampler2D _CameraDepthTexture;
+uniform lowp sampler2D _CameraMotionVectorsTexture;
+uniform lowp sampler2D _HistoryTex;
+uniform lowp sampler2D _HistoryID;
+uniform lowp sampler2D _MainTex;
+in highp vec2 vs_TEXCOORD0;
+in highp vec2 vs_TEXCOORD1;
+in highp vec4 vs_TEXCOORD2;
+in highp vec4 vs_TEXCOORD3;
+layout(location = 0) out mediump vec4 SV_Target0;
+layout(location = 1) out mediump vec4 SV_Target1;
+vec4 u_xlat0;
+lowp vec4 u_xlat10_0;
+ivec2 u_xlati0;
+bool u_xlatb0;
+vec3 u_xlat1;
+lowp vec3 u_xlat10_1;
+bvec2 u_xlatb1;
+vec4 u_xlat2;
+vec3 u_xlat3;
+mediump vec4 u_xlat16_3;
+lowp vec3 u_xlat10_3;
+mediump vec4 u_xlat16_4;
+lowp vec3 u_xlat10_4;
+mediump vec3 u_xlat16_5;
+vec3 u_xlat6;
+vec3 u_xlat7;
+mediump vec3 u_xlat16_8;
+float u_xlat9;
+int u_xlati9;
+bool u_xlatb9;
+vec3 u_xlat10;
+mediump vec3 u_xlat16_14;
+float u_xlat18;
+int u_xlati18;
+bool u_xlatb18;
+vec2 u_xlat21;
+ivec2 u_xlati21;
+float u_xlat27;
+float u_xlat28;
+bool u_xlatb28;
+float u_xlat30;
+float u_xlat31;
+mediump float u_xlat16_32;
+float u_xlat33;
+void main()
+{
+    //u_xlat10.xy = vs_TEXCOORD0.xy + (-_Jitter.xy);
+    u_xlat10.xy = vs_TEXCOORD0.xy;
+    vec3 u_xlat2;
+    u_xlat2.xyz = texture(_MainTex, u_xlat10.xy).xyz;
+    SV_Target0 = vec4(u_xlat2, 1.0);
+    
+    return;
+}

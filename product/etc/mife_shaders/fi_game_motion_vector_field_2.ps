@@ -1,0 +1,196 @@
+precision highp int;
+precision highp uimage2D;
+precision highp float; //system crash
+//precision lowp float;  // game crash
+
+   
+    
+layout(location=0) in highp vec2 in_TEXCOORD0;
+layout(location=0) out lowp vec4 out_Target0;
+layout (location = 0) uniform vec2 displaySizeRcp;
+layout (location = 1) uniform ivec2 renderSize;
+
+layout(binding = 0) uniform sampler2D r_current_interpolation_source;
+layout(binding = 1) uniform sampler2D r_prev_interpolation_source;
+
+layout(binding = 0, r32ui) uniform uimage2D rw_game_motion_vector_field_x;
+
+
+
+const mediump float FFX_FRAMEINTERPOLATION_EPSILON = 1e-3;
+
+const uint MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT = 32u;
+
+// Make sure all bit counts add up to MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT
+const uint MOTION_VECTOR_FIELD_VECTOR_COEFFICIENT_BIT_COUNT = 16u;
+const uint MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT = 5u;
+const uint MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT = 10u;
+const uint MOTION_VECTOR_PRIMARY_VECTOR_INDICATION_BIT_COUNT = 1u;
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT = 11u;
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT = 10u;
+
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_MASK = 0xFFE00000u; //21bit
+
+const uint MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT = (1U << (MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT - 1u));
+
+const uint PRIORITY_LOW_MAX = (1U << MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT) - 1u;
+const uint PRIORITY_HIGH_MAX = (1U << MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT) - 1u;
+const uint MOTION_VECTOR_X_MAX = (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT) - 1u;
+const uint MOTION_VECTOR_Y_MAX = (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT) - 1u;
+const highp float INV_MOTION_VECTOR_X_MAX = 1.0 / float(MOTION_VECTOR_X_MAX);
+const highp float INV_MOTION_VECTOR_Y_MAX = 1.0 / float(MOTION_VECTOR_Y_MAX);
+const highp float MOTION_VECTOR_X_MAX_F = float(MOTION_VECTOR_X_MAX);
+const highp float MOTION_VECTOR_Y_MAX_F = float(MOTION_VECTOR_Y_MAX);
+
+const uint MOTION_VECTOR_X_OFFSET = MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT;
+const uint PRIORITY_LOW_OFFSET = MOTION_VECTOR_FIELD_VECTOR_COEFFICIENT_BIT_COUNT;
+const uint PRIORITY_HIGH_OFFSET = PRIORITY_LOW_OFFSET + MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT;
+const uint PRIMARY_VECTOR_INDICATION_OFFSET = PRIORITY_HIGH_OFFSET + MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT;
+
+///////////////////////////////////////////////////////
+
+bool PackedVectorFieldEntryIsPrimary(uint packedEntry) 
+{
+    return ((packedEntry & MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT) != 0u);
+}
+
+vec2 UnPackMotionVector(uint packedGameFieldMv)
+{
+    vec2 fMotionVector;
+    fMotionVector.x = float((packedGameFieldMv >> MOTION_VECTOR_X_OFFSET) & MOTION_VECTOR_X_MAX) * INV_MOTION_VECTOR_X_MAX;
+    fMotionVector.y = float((packedGameFieldMv) & MOTION_VECTOR_Y_MAX) * INV_MOTION_VECTOR_Y_MAX;
+    fMotionVector = fMotionVector * vec2(2.0) - vec2(1.0);
+    return fMotionVector;
+}
+
+bool IsUvInside(vec2 fUv) 
+{
+    return (fUv.x > 0.0 && fUv.x < 1.0) && (fUv.y > 0.0 && fUv.y < 1.0);
+}
+
+
+uint PackVectorFieldEntries(uint bIsPrimary, uint uHighPriorityFactor, uint uLowPriorityFactor, vec2 fMotionVector) 
+{
+    highp vec2 fMotionVectorEncode = fMotionVector * vec2(0.5) + vec2(0.5); 
+    uint uPriority =
+        (uint(bIsPrimary) * MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT) |
+        ((uHighPriorityFactor & PRIORITY_HIGH_MAX) << PRIORITY_HIGH_OFFSET) |
+        ((uLowPriorityFactor & PRIORITY_LOW_MAX) << PRIORITY_LOW_OFFSET);
+
+    uPriority = uPriority & MOTION_VECTOR_FIELD_MOTION_VECTOR_MASK;
+    uint packedX = uint(fMotionVectorEncode.x * MOTION_VECTOR_X_MAX_F) & MOTION_VECTOR_X_MAX;
+    uint packedY = uint(fMotionVectorEncode.y * MOTION_VECTOR_Y_MAX_F) & MOTION_VECTOR_Y_MAX;
+    uPriority =
+        uPriority |
+        (packedX << MOTION_VECTOR_X_OFFSET) |
+        (packedY);
+
+    return uPriority;
+} 
+
+bool IsOnScreen(ivec2 pos, ivec2 size)
+{
+    return all( lessThan(ivec2(pos), ivec2(size))) && all(greaterThanEqual(pos, ivec2(0,0)));
+}
+
+
+
+uint UpdateGameMotionVectorFieldEx(in ivec2 iPxPos, in uint packedVector) 
+{
+    return imageAtomicMax(rw_game_motion_vector_field_x, iPxPos, packedVector);
+}
+
+
+
+void FillTheGameMotionVectorHole(vec2 currentUV,  vec2 fMotionVectorHalf, vec2 fGameMotionVector, uint uHighPriorityFactorPrimary)
+{   
+     vec2 frenderSize = vec2(renderSize);
+     bool bWriteSecondaryVectors = length(fMotionVectorHalf * frenderSize) > FFX_FRAMEINTERPOLATION_EPSILON;
+    if (bWriteSecondaryVectors) 
+    {
+        bool bWriteSecondary = true;
+        float uNumPrimaryHits = 0.0;
+        float fSecondaryStepScale = length(displaySizeRcp);
+        fSecondaryStepScale = abs(fGameMotionVector.x) > abs(fGameMotionVector.y) ? displaySizeRcp.x: displaySizeRcp.y;
+        vec2 fStepMv = normalize(fGameMotionVector);
+        float fBreakDist = min(length(fMotionVectorHalf), length(vec2(0.5, 0.5)));
+        vec2 fInterpolatedLocationUv = currentUV;
+        for (float fMvScale = fSecondaryStepScale; fMvScale <= fBreakDist && bWriteSecondary; fMvScale += fSecondaryStepScale) 
+        {
+            vec2 fSecondaryLocationUv = fInterpolatedLocationUv - fStepMv * fMvScale;
+            uint uHighPriorityFactorSecondary = max(1u, PRIORITY_HIGH_MAX - (uHighPriorityFactorPrimary));
+            uint uLowPriorityFactor = 0u;  
+
+            uint packedVectorSecondary = PackVectorFieldEntries(0u, uHighPriorityFactorSecondary, uLowPriorityFactor, fMotionVectorHalf);
+
+            
+
+            ivec2 iSamplePos = ivec2((fSecondaryLocationUv * frenderSize));
+            bWriteSecondary = bWriteSecondary && IsOnScreen(iSamplePos, renderSize);
+            if (bWriteSecondary) 
+            {
+                uint uExistingVectorFieldEntry = UpdateGameMotionVectorFieldEx(iSamplePos, packedVectorSecondary);
+            
+                uNumPrimaryHits += float(PackedVectorFieldEntryIsPrimary(uExistingVectorFieldEntry));
+                bWriteSecondary =  bWriteSecondary && (uNumPrimaryHits <= 3.0);
+            }
+        }
+    }
+}
+uint LoadGameFieldMv(ivec2 iPxSample) 
+{
+    uint packedX = imageLoad(rw_game_motion_vector_field_x, iPxSample).r;
+    return packedX;
+}
+
+
+const ivec2 offset_array[4] = ivec2[4](ivec2(-1, 0), ivec2(1, 0), ivec2(0, 1), ivec2(0, -1));
+void computeGameFieldMvs(ivec2 iPxPos) 
+{
+    uint packedGameFieldMv = LoadGameFieldMv(iPxPos);
+    
+    if(PackedVectorFieldEntryIsPrimary(packedGameFieldMv) == false)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            {
+                ivec2 testPos =  offset_array[i] + iPxPos;
+                
+                if(all(lessThan(testPos.xy, renderSize)))
+                {
+                    packedGameFieldMv = LoadGameFieldMv(testPos);
+                    if(PackedVectorFieldEntryIsPrimary(packedGameFieldMv))
+                    {
+                        vec2 fMotionVector = UnPackMotionVector(packedGameFieldMv);
+                        vec2 fUv = vec2(testPos) * displaySizeRcp;
+                        uint uHighPriorityFactorPrimary = (((packedGameFieldMv >> PRIORITY_HIGH_OFFSET)) & PRIORITY_HIGH_MAX);
+                        FillTheGameMotionVectorHole(fUv, fMotionVector, fMotionVector * 2.0, uHighPriorityFactorPrimary);
+                    }
+                }
+            
+            }
+        }
+        discard;
+    }
+    else
+    {
+        vec2 fMotionVector = UnPackMotionVector(packedGameFieldMv);
+        vec2 cur_fUv = in_TEXCOORD0 - fMotionVector + displaySizeRcp * normalize(fMotionVector);
+        vec3 cur_color =  textureLod(r_current_interpolation_source, cur_fUv, 0.0).xyz;
+        out_Target0 = vec4(cur_color, 1.0);
+    }
+        /*
+        vec2 centerPos = vec2(100, 100);
+        float distance = length(centerPos - vec2(iPxPos));
+        if(distance < 30.0)
+        {
+            out_Target0 = vec4(1.0,0.0,0.0, 1.0);
+        }
+        */
+    }
+
+void main() 
+{
+    ivec2 iPxPos = ivec2(in_TEXCOORD0 * vec2(renderSize));
+    computeGameFieldMvs(iPxPos);
+}

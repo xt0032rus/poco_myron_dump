@@ -1,0 +1,232 @@
+#version 320 es
+
+precision highp image2D;
+precision highp uimage2D;
+precision mediump float;
+
+layout(binding = 0, r32ui) uniform uimage2D rw_optical_flow_scd_histogram;
+layout(binding = 1, r32f) uniform image2D rw_optical_flow_scd_previous_histogram;
+layout(binding = 2, r32ui) uniform uimage2D rw_optical_flow_scd_temp;
+layout(binding = 3, r32ui) uniform uimage2D rw_optical_flow_scd_output;
+
+shared float sourceHistogram[256];
+shared float tempBuffer[256];
+shared float filteredHistogram[256];
+shared vec2 tempBuffer2[256];
+
+
+#define SCD_OUTPUT_SCENE_CHANGE_SLOT            0
+#define SCD_OUTPUT_HISTORY_BITS_SLOT            1
+#define SCD_OUTPUT_COMPLETED_WORKGROUPS_SLOT    2
+
+uint LoadRwSCDHistogram(int iIndex) 
+{
+    return imageLoad(rw_optical_flow_scd_histogram,  ivec2(iIndex, 0) ).x;
+}
+
+float LoadRwSCDPreviousHistogram(int iIndex) 
+{
+    return imageLoad(rw_optical_flow_scd_previous_histogram, ivec2(iIndex, 0)).x;
+}
+
+void AtomicIncrementSCDTemp(int iIndex, uint valueToAdd) 
+{
+    imageAtomicAdd(rw_optical_flow_scd_temp, ivec2(iIndex, 0), valueToAdd);
+}
+
+uint AtomicIncrementSCDOutput(int iIndex, uint valueToAdd) 
+{
+    return imageAtomicAdd(rw_optical_flow_scd_output, ivec2(iIndex, 0), valueToAdd);
+}
+
+uint LoadRwSCDTemp(int iIndex) 
+{
+    return imageLoad(rw_optical_flow_scd_temp, ivec2(iIndex, 0)).x;
+}
+
+uint LoadRwSCDOutput(int iIndex) 
+{
+    return imageLoad(rw_optical_flow_scd_output, ivec2(iIndex, 0)).r;
+}
+
+bool CrossedSceneChangeThreshold(float sceneChangeValue) 
+{
+    return sceneChangeValue > 0.45;
+}
+
+void StoreSCDOutput(int iIndex, uint value) 
+{
+    imageStore(rw_optical_flow_scd_output, ivec2(iIndex, 0), uvec4(value, 0, 0, 0));
+}
+
+void StoreSCDPreviousHistogram(int iIndex, float value) 
+{
+    imageStore(rw_optical_flow_scd_previous_histogram, ivec2(iIndex, 0), vec4(value, 0.0, 0.0, 0.0));
+}
+
+void StoreSCDHistogram(int iIndex, uint value) 
+{
+    imageStore(rw_optical_flow_scd_histogram, ivec2(iIndex, 0), uvec4(value, 0, 0, 0));
+}
+
+void ResetSCDTemp() 
+{
+    imageStore(rw_optical_flow_scd_temp, ivec2(0, 0), uvec4(0));
+    imageStore(rw_optical_flow_scd_temp, ivec2(1, 0), uvec4(0));
+    imageStore(rw_optical_flow_scd_temp, ivec2(2, 0), uvec4(0));
+}
+
+void ComputeSCDHistogramsDivergence(ivec3 iGlobalId, ivec2 iLocalId, int iLocalIndex, ivec2 iGroupId, ivec2 iGroupSize) 
+{
+
+    float Factor = 1000000.0;
+    int WhereToStop = 3 * 9 - 1;
+    int HistogramCount = 3 * 3;
+
+    // float Kernel[6] = {0.0088122291, 0.027143577, 0.065114059, 0.12164907, 0.17699835, 0.20056541};
+    float Kernel[6];
+    Kernel[0] = 0.0088122291;
+    Kernel[1] = 0.027143577;
+    Kernel[2] = 0.065114059;
+    Kernel[3] = 0.12164907;
+    Kernel[4] = 0.17699835;
+    Kernel[5] = 0.20056541;
+
+    sourceHistogram[iLocalIndex] = float(LoadRwSCDHistogram(iGlobalId.x));
+    barrier();
+
+    int kernelShift = -5;
+    int indexToRead = iLocalIndex + kernelShift;
+
+    float val = 0.0;
+    val += Kernel[0] * sourceHistogram[max(0, min(255, indexToRead + 0))];
+    val += Kernel[1] * sourceHistogram[max(0, min(255, indexToRead + 1))];
+    val += Kernel[2] * sourceHistogram[max(0, min(255, indexToRead + 2))];
+    val += Kernel[3] * sourceHistogram[max(0, min(255, indexToRead + 3))];
+    val += Kernel[4] * sourceHistogram[max(0, min(255, indexToRead + 4))];
+    val += Kernel[5] * sourceHistogram[max(0, min(255, indexToRead + 5))];
+    val += Kernel[4] * sourceHistogram[max(0, min(255, indexToRead + 6))];
+    val += Kernel[3] * sourceHistogram[max(0, min(255, indexToRead + 7))];
+    val += Kernel[2] * sourceHistogram[max(0, min(255, indexToRead + 8))];
+    val += Kernel[1] * sourceHistogram[max(0, min(255, indexToRead + 9))];
+    val += Kernel[0] * sourceHistogram[max(0, min(255, indexToRead + 10))];
+
+    val += 1.0;
+
+    if (iGlobalId.y == 0) {
+        if (iLocalIndex == 0)
+            filteredHistogram[255] = 1.0;
+        else
+            filteredHistogram[iLocalIndex - 1] = val;
+    }
+    else if (iGlobalId.y == 1) {
+        filteredHistogram[iLocalIndex] = val;
+    }
+    else if (iGlobalId.y == 2) {
+        if (iLocalIndex == 255)
+            filteredHistogram[0] = 1.0;
+        else
+            filteredHistogram[iLocalIndex + 1] = val;
+    }
+    barrier();
+
+    tempBuffer[iLocalIndex] = filteredHistogram[iLocalIndex];
+    barrier();
+
+    if (iLocalIndex < 128) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 128];
+    barrier();
+
+    if (iLocalIndex < 64) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 64];
+    barrier();
+
+    if (iLocalIndex < 32) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 32];
+    barrier();
+    if (iLocalIndex < 16) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 16];
+    barrier();
+    if (iLocalIndex < 8) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 8];
+    barrier();
+    if (iLocalIndex < 4) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 4];
+    barrier();
+    if (iLocalIndex < 2) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 2];
+    barrier();
+    if (iLocalIndex < 1) tempBuffer[iLocalIndex] += tempBuffer[iLocalIndex + 1];
+    barrier();
+
+    filteredHistogram[iLocalIndex] /= tempBuffer[0];
+
+    float currentFilteredHistogramsValue = filteredHistogram[iLocalIndex];
+    float previousHistogramsValue = LoadRwSCDPreviousHistogram(iGlobalId.x);
+
+    tempBuffer2[iLocalIndex] = vec2(
+        currentFilteredHistogramsValue * log(currentFilteredHistogramsValue / previousHistogramsValue),
+        previousHistogramsValue * log(previousHistogramsValue / currentFilteredHistogramsValue)
+    );
+    barrier();
+
+    if (iLocalIndex < 128) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 128];
+    barrier();
+
+    if (iLocalIndex < 64) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 64];
+    barrier();
+
+    if (iLocalIndex < 32) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 32];
+    barrier();
+    if (iLocalIndex < 16) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 16];
+    barrier();
+    if (iLocalIndex < 8) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 8];
+    barrier();
+    if (iLocalIndex < 4) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 4];
+    barrier();
+    if (iLocalIndex < 2) tempBuffer2[iLocalIndex] += tempBuffer2[iLocalIndex + 2];
+    barrier();
+    if (iLocalIndex == 0) 
+    {
+        
+        vec2 sum = tempBuffer2[0] + tempBuffer2[1];
+
+        float resFloat = 1.0 - exp(-(abs(sum.x) + abs(sum.y)));
+        uint resUInt = uint((resFloat / float(HistogramCount)) * Factor);
+        AtomicIncrementSCDTemp(iGlobalId.y, resUInt);
+
+        uint oldFinishedGroupCount = AtomicIncrementSCDOutput(SCD_OUTPUT_COMPLETED_WORKGROUPS_SLOT, 1u);
+        
+        if (oldFinishedGroupCount == uint(WhereToStop)) 
+        {
+            uint res0 = LoadRwSCDTemp(0);
+            uint res1 = LoadRwSCDTemp(1);
+            uint res2 = LoadRwSCDTemp(2);
+            float sceneChangeValue = min(float(res0), min(float(res1), float(res2))) / Factor;
+
+            uint history = LoadRwSCDOutput(SCD_OUTPUT_HISTORY_BITS_SLOT) << 1;
+            if (CrossedSceneChangeThreshold(sceneChangeValue)) 
+            {
+                history |= 1u;
+            }
+            StoreSCDOutput(SCD_OUTPUT_SCENE_CHANGE_SLOT,  floatBitsToUint(sceneChangeValue));
+            StoreSCDOutput(SCD_OUTPUT_HISTORY_BITS_SLOT, history);
+            StoreSCDOutput(SCD_OUTPUT_COMPLETED_WORKGROUPS_SLOT, 0u);
+            ResetSCDTemp();
+        }
+        
+    }
+
+    if (iGlobalId.y == 1) 
+    {
+        StoreSCDPreviousHistogram(iGlobalId.x, currentFilteredHistogramsValue);
+
+        StoreSCDHistogram(iGlobalId.x, 0u);
+    }
+}
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+void main() 
+{
+    ivec3 iGlobalId = ivec3(gl_GlobalInvocationID);
+    ivec2 iLocalId = ivec2(gl_LocalInvocationID);
+    ivec2 iGroupId = ivec2(gl_WorkGroupID);
+    int iLocalIndex = int(gl_LocalInvocationIndex);
+
+    ivec2 iGroupSize = ivec2(256, 1);
+    ComputeSCDHistogramsDivergence(iGlobalId, iLocalId, iLocalIndex, iGroupId, iGroupSize);
+}

@@ -1,0 +1,21 @@
+#version 320 es
+
+precision highp image2D;
+
+layout (location = 0) uniform ivec2 surface_size;
+layout( binding = 0) uniform sampler2D interpolation_texture;
+layout(binding = 1, rgba8) writeonly uniform image2D rw_output;
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+void main()
+{
+    ivec2 iPxPos = ivec2(gl_GlobalInvocationID.xy);
+    if (all(lessThan(iPxPos.xy, surface_size)))
+    {
+        vec2 inv_surface_size = 1.0 / vec2(surface_size);
+        vec2 uv = vec2(iPxPos) * inv_surface_size;
+        vec4 color = texture(interpolation_texture, uv).rgba;
+        imageStore(rw_output, iPxPos, vec4(color.xyz, 1.0));
+    }
+    
+}

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<smart_cache>
+    <!-- 锁存文件配置 -->
+    <!-- 配置level1的文件 -->
+    <level1 name="system libs">
+        <file name="boot-framework.vdex" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-framework-adservices.vdex" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-framework.oat" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-framework-adservices.oat" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-framework.art" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-telephony-common.vdex" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-telephony-common.oat" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-telephony-common.art" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot.oat" pkn="null" path="/system/framework/arm64/"/>
+        <file name="boot-core-libart.oat" pkn="null" path="/system/framework/arm64/"/>
+        <file name="libhwui.so" pkn="null" path="/system/lib64/"/>
+        <file name="libRScpp.so" pkn="null" path="/system/lib64/"/>
+        <file name="libRS.so" pkn="null" path="/system/lib64/"/>
+        <file name="libRS_internal.so" pkn="null" path="/system/lib64/"/>
+        <file name="libbcinfo.so" pkn="null" path="/system/lib64/"/>
+        <file name="libRSDriver.so" pkn="null" path="/system/lib64/"/>
+        <file name="libRSCpuRef.so" pkn="null" path="/system/lib64/"/>
+        <file name="libblas.so" pkn="null" path="/system/lib64/"/>
+        <file name="android.hardware.graphics.bufferqueue@1.0.so" pkn="null" path="/system/lib64/"/>
+        <file name="libandroid_runtime.so" pkn="null" path="/system/lib64/"/>
+        <file name="libaudiopolicymanagerdefault.so" pkn="null" path="/system/lib64/"/>
+        <file name="libbpf_minimal.so" pkn="null" path="/system/lib64/"/>
+        <file name="libcamera_metadata.so" pkn="null" path="/system/lib64/"/>
+        <file name="libcompiler_rt.so" pkn="null" path="/system/lib64/"/>
+        <file name="libGLESv3.so" pkn="null" path="/system/lib64/"/>
+        <file name="libincfs.so" pkn="null" path="/system/lib64/"/>
+        <file name="libinputreader.so" pkn="null" path="/system/lib64/"/>
+        <file name="libiprouteutil.so" pkn="null" path="/system/lib64/"/>
+        <file name="libmedia.so" pkn="null" path="/system/lib64/"/>
+        <file name="libmedia_jni.so" pkn="null" path="/system/lib64/"/>
+        <file name="libmediadrmmetrics_lite.so" pkn="null" path="/system/lib64/"/>
+        <file name="libmediandk.so" pkn="null" path="/system/lib64/"/>
+        <file name="libmediautils.so" pkn="null" path="/system/lib64/"/>
+        <file name="libstagefright_amrnb_common.so" pkn="null" path="/system/lib64/"/>
+        <file name="libstagefright_omx.so" pkn="null" path="/system/lib64/"/>
+        <file name="libwilhelm.so" pkn="null" path="/system/lib64/"/>
+        <file name="services.jar" pkn="null" path="/system/framework/"/>
+        <file name="framework.jar" pkn="null" path="/system/framework/"/>
+        <file name="telephony-common.jar" pkn="null" path="/system/framework/"/>
+        <file name="framework-res.apk" pkn="null" path="/system/framework/"/>
+        <file name="org.apache.http.legacy.jar" pkn="null" path="/system/framework/"/>
+        <file name="boot.oat" pkn="null" path="/system/framework/arm/"/>
+        <file name="boot-framework.oat" pkn="null" path="/system/framework/arm/"/>
+        <file name="boot-core-libart.oat" pkn="null" path="/system/framework/arm/"/>
+        <file name="system@framework@services.jar@classes.dex" pkn="null" path="/data/dalvik-cache/arm64/"/>
+        <file name="system@framework@boot.oat" pkn="null" path="/data/dalvik-cache/arm64/"/>
+        <!--<file name="system_ext@priv-app@MiuiSystemUI@MiuiSystemUI.apk@classes.dex" pkn="null" path="/data/dalvik-cache/arm64/"/>
+        <file name="system_ext@priv-app@MiuiSystemUI@MiuiSystemUI.apk@classes.vdex" pkn="null" path="/data/dalvik-cache/arm64/"/>-->
+        <file name="libc++.so" pkn="null" path="/apex/com.android.conscrypt/lib64/"/>
+        <file name="libcrypto.so" pkn="null" path="/apex/com.android.conscrypt/lib64/"/>
+        <file name="libjavacrypto.so" pkn="null" path="/apex/com.android.conscrypt/lib64/"/>
+        <file name="libssl.so" pkn="null" path="/apex/com.android.conscrypt/lib64/"/>
+        <file name="services.odex" pkn="null" path="/system/framework/oat/arm64/"/>
+        <file name="services.vdex" pkn="null" path="/system/framework/oat/arm64/"/>
+        <!--<file name="MIUISystemUIPlugin.vdex" pkn="null" path="/product/app/MIUISystemUIPlugin/oat/arm64/"/>
+        <file name="MIUISystemUIPlugin.odex" pkn="null" path="/product/app/MIUISystemUIPlugin/oat/arm64/"/>-->
+        <file name="system@framework@services.jar@classes.dex" pkn="null" path="/data/dalvik-cache/arm/"/>
+        <file name="system@framework@boot.oat" pkn="null" path="/data/dalvik-cache/arm/"/>
+        <file name="libjavacore.so" pkn="null" path="/apex/com.android.art/lib64/"/>
+        <file name="liblz4.so" pkn="null" path="/apex/com.android.art/lib64/"/>
+        <file name="libsurfaceflinger.so" pkn="null" path="/system_ext/lib64/"/>
+        <file name="surfaceflinger" pkn="null" path="/system/bin/"/>
+        <file name="NotoColorEmoji.ttf" pkn="null" path="/system/fonts/"/>
+        <file name="MiSansVF.ttf" pkn="null" path="/product/fonts/"/>
+        <file name="updatable-media.jar" pkn="null" path="/apex/com.android.media/javalib/"/>
+        <!--<file name="MiuiSystemUI.apk" pkn="null" path="/system_ext/priv-app/MiuiSystemUI/"/>-->
+        <file name="MIUISecurityCenter.apk" pkn="null" path="/product/priv-app/MIUISecurityCenter/"/>
+        <!--<file name="MIUISystemUIPlugin.apk" pkn="null" path="/product/app/MIUISystemUIPlugin/"/>-->
+        <file name="services.odex" pkn="null" path="/system/framework/oat/arm/"/>
+        <file name="service-appsearch.jar" pkn="null" path="/apex/com.android.appsearch/javalib/"/>
+        <file name="apache-xml.jar" pkn="null" path="/apex/com.android.art/javalib/"/>
+        <file name="conscrypt.jar" pkn="null" path="/apex/com.android.conscrypt/javalib/"/>
+        <file name="miui-services.odex" pkn="null" path="/system_ext/framework/oat/arm64/"/>
+        <file name="MiuiHome.vdex" pkn="null" path="/product/priv-app/MiuiHome/oat/arm64/"/>
+        <file name="launcher4x6.db" pkn="null" path="/data/user_de/0/com.miui.home/databases/"/>
+        <file name="launcher4x6.db" pkn="null" path="/data_mirror/data_de/null/0/com.miui.home/databases/"/>
+    </level1>
+    <!-- 配置level2的文件 -->
+    <level2 name="system applications">
+    </level2>
+    <!-- 配置level3的文件 -->
+    <level3 name="Third-party applications">
+        <!-- <file name="tv.danmaku.bili" pkn="tv.danmaku.bili" path="/data/data/"/>
+        <file name="tv.danmaku.bili" pkn="tv.danmaku.bili" path="/data/misc/profiles/cur/0/"/>
+        <file name="tv.danmaku.bili" pkn="tv.danmaku.bili" path="/data/misc/profiles/ref/"/>
+        <file name="code_cache" pkn="tv.danmaku.bili" path="/data/user_de/0/tv.danmaku.bili/"/>
+        <file name="com.xingin.xhs" pkn="com.xingin.xhs" path="/data/data/"/>
+        <file name="com.xingin.xhs" pkn="com.xingin.xhs" path="/data/misc/profiles/cur/0/"/>
+        <file name="com.xingin.xhs" pkn="com.xingin.xhs" path="/data/misc/profiles/ref/"/>
+        <file name="code_cache" pkn="com.xingin.xhs" path="/data/user_de/0/com.xingin.xhs/"/>
+        <file name="com.xunmeng.pinduoduo" pkn="com.xunmeng.pinduoduo" path="/data/data/"/>
+        <file name="com.xunmeng.pinduoduo" pkn="com.xunmeng.pinduoduo" path="/data/misc/profiles/cur/0/"/>
+        <file name="com.xunmeng.pinduoduo" pkn="com.xunmeng.pinduoduo" path="/data/misc/profiles/ref/"/>
+        <file name="code_cache" pkn="com.xunmeng.pinduoduo" path="/data/user_de/0/com.xunmeng.pinduoduo/"/>
+        <file name="system" pkn="" path="/data/"/> -->
+    </level3>
+    <!-- 内存容量配置 -->
+    <memory_capacity>
+        <capacity size="4G">
+            <recycleratio>50</recycleratio>
+            <mem limit="157286400 637534208 0"></mem>
+        </capacity>
+        <capacity size="6G">
+            <recycleratio>50</recycleratio>
+            <mem limit="209715200 637534208 0"></mem>
+        </capacity>
+        <capacity size="8G">
+            <recycleratio>50</recycleratio>
+            <mem limit="314572800 83886080 0"></mem>
+        </capacity>
+        <capacity size="12G">
+            <recycleratio>50</recycleratio>
+            <mem limit="524288000 83886080 0"></mem>
+        </capacity>
+        <capacity size="16G">
+            <recycleratio>50</recycleratio>
+            <mem limit="637534208 83886080 0"></mem>
+        </capacity>
+    </memory_capacity>
+</smart_cache>
+

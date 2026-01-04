@@ -1,0 +1,93 @@
+#version 320 es
+
+precision mediump float;
+precision mediump uint;
+precision mediump uimage2D;
+
+
+layout (location = 0) uniform ivec2 iInputLumaResolution;
+layout(r32ui, binding = 0) readonly uniform uimage2D r_optical_flow_input;
+layout(r32ui, binding = 1) uniform uimage2D rw_optical_flow_scd_histogram;
+shared uint sharedbuffer[2560]; //256 * 10
+
+
+ivec2 DisplaySize() 
+{
+    return iInputLumaResolution;
+}
+
+uint LoadOpticalFlowInput(ivec2 iPxPos) 
+{
+    uint re = imageLoad(r_optical_flow_input, iPxPos).x;
+    vec4 temp = vec4(float(re) / 255.0);
+    return re;
+
+}
+
+void AtomicIncrementSCDHistogram(int iIndex, uint valueToAdd) 
+{
+    imageAtomicAdd(rw_optical_flow_scd_histogram, ivec2(iIndex, 0), valueToAdd);
+}
+
+void GenerateSceneChangeDetectionHistogram(uvec3 iGlobalId, ivec2 iLocalId, int iLocalIndex, ivec2 iGroupId, ivec2 iGroupSize) 
+{
+    uint HistogramsPerDim = 3u;
+
+    uint x = uint(DisplaySize().x);
+    uint y = uint(DisplaySize().y);
+    uint divX = x / HistogramsPerDim;
+    uint divY = y / HistogramsPerDim;
+
+    uint nx = iGlobalId.z % HistogramsPerDim;
+    uint ny = iGlobalId.z / HistogramsPerDim;
+    uint startX = divX * nx;
+    uint startY = divY * ny;
+    uint stopX = startX + divX;
+    uint stopY = startY + divY;
+
+    uint bufferOffset = uint(iLocalIndex * 10);
+
+    for (uint i = 0u; i < 10u; i++) {
+        sharedbuffer[bufferOffset + i] = 0u;
+    }
+    barrier();
+    
+    ivec2 coord = ivec2(startX + (4u * iGlobalId.x), startY + iGlobalId.y);
+    if (uint(coord.x) < stopX) {
+        for (; uint(coord.y) < stopY; coord.y += 128) {
+            uvec4 color = uvec4(
+                LoadOpticalFlowInput(coord + ivec2(0, 0)),
+                LoadOpticalFlowInput(coord + ivec2(1, 0)),
+                LoadOpticalFlowInput(coord + ivec2(2, 0)),
+                LoadOpticalFlowInput(coord + ivec2(3, 0))
+            );
+            color *= 10u;
+
+            uint scramblingOffset = uint(iLocalIndex % 10);
+
+            atomicAdd(sharedbuffer[color.x + scramblingOffset], 1u);
+            atomicAdd(sharedbuffer[color.y + scramblingOffset], 1u);
+            atomicAdd(sharedbuffer[color.z + scramblingOffset], 1u);
+            atomicAdd(sharedbuffer[color.w + scramblingOffset], 1u);
+        }
+    }
+    barrier();
+    
+    uint value = 0u;
+    for (int i = 0; i < 10; i++) {
+        value += sharedbuffer[bufferOffset + uint(i)];
+    }
+    uint histogramStart = uint(uint(iGroupSize.x * iGroupSize.y) * iGlobalId.z);
+    AtomicIncrementSCDHistogram(int(histogramStart) + iLocalIndex, value);
+}
+
+layout(local_size_x = 32, local_size_y = 8, local_size_z = 1) in;
+void main() {
+    uvec3 iGlobalId = uvec3(gl_GlobalInvocationID.xyz);
+    ivec2 iLocalId = ivec2(gl_LocalInvocationID.xy);
+    ivec2 iGroupId = ivec2(gl_WorkGroupID.xy);
+    int iLocalIndex = int(gl_LocalInvocationIndex);
+
+    ivec2 iGroupSize = ivec2(32, 8);
+    GenerateSceneChangeDetectionHistogram(iGlobalId, iLocalId, iLocalIndex, iGroupId, iGroupSize);
+}

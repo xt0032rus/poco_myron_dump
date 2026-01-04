@@ -1,0 +1,13 @@
+{
+    "localAuthPkg": ["com.miui.home","com.android.systemui","systemCall"],
+    "cpufreq": {
+        "little_core_value": [0, 0, 0],
+        "big_core_value": [3513, 2227, 1632],
+        "prime_core_value": [4070, 3398, 2668]
+    },
+    "gpufreq": [0, 4, 8],
+    "ddrfreq": {
+        "values": [5333000, 4780000, 4224000],
+        "is_LLCC_DDR_BW_V2": true
+    }
+}

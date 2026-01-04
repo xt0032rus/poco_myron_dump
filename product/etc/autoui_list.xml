@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<packageRules>
+    <rule2/>
+    <package name="tv.danmaku.bili" enable="true" describe="哔哩哔哩">
+        <activity name="tv.danmaku.bili.ui.video.VideoDetailsActivity" policy="9">
+            <view name="" id="" path="control_container/PlayerInsetControllerWidget/player_container_phone_info:-1">
+                <view_policy range="1" policytype="padding"  paddingright="30" />
+            </view>
+        </activity>
+        <activity name="com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity" policy="9">
+            <view name="" id="" path="control_container/PlayerInsetControllerWidget/player_container_phone_info:-1">
+                <view_policy range="1" policytype="padding"  paddingright="30" />
+            </view>
+        </activity>
+        <activity name="com.bilibili.video.story.StoryTransparentActivity" policy="9">
+            <view name="" id="" path="story_landscape_comment/story_landscape_comment_container/LinearLayout/content_view/ConstraintLayout/layer_container/TintConstraintLayout/comment_main/cmt3_swipe_refresh/cmt3_recycler:-1">
+                <view_policy range="1" policytype="padding"  paddingright="12" />
+            </view>
+            <view name="" id="" path="story_activity_root/story_landscape/story_landscape_controller:-1">
+                <view_policy range="1" policytype="padding"  paddingright="20" paddingleft="48"/>
+            </view>
+        </activity>
+        <activity name="com.bilibili.bililive.room.ui.roomv3.LiveRoomActivityV3" policy="9">
+            <view name="" id="" path="player_controller/FrameLayout/rl_widget/ll_bar_area:-1">
+                <view_policy range="1" policytype="padding"  paddingright="20" />
+            </view>
+            <view name="" id="" path="player_controller/FrameLayout/rl_widget/ll_bottom:-1">
+                <view_policy range="1" policytype="padding"  paddingright="32" />
+            </view>s
+        </activity>
+        <activity name="com.bilibili.bililive.room.ui.roomv3.LiveRoomTranslucentActivity" policy="9">
+            <view name="" id="" path="player_controller/FrameLayout/rl_widget/ll_bar_area:-1">
+                <view_policy range="1" policytype="padding"  paddingright="20" />
+            </view>
+            <view name="" id="" path="player_controller/FrameLayout/rl_widget/ll_bottom:-1">
+                <view_policy range="1" policytype="padding"  paddingright="32" />
+            </view>
+        </activity>
+        <activity name="com.bilibili.video.story.StoryVideoActivity" policy="9">
+            <view name="" id="" path="story_landscape_comment/story_landscape_comment_container/LinearLayout/content_view/ConstraintLayout/layer_container/TintConstraintLayout/comment_main/cmt3_swipe_refresh/cmt3_recycler:-1">
+                <view_policy range="1" policytype="padding"  paddingright="12" />
+            </view>
+            <view name="" id="" path="story_activity_root/story_landscape/story_landscape_controller:-1">
+                <view_policy range="1" policytype="padding"  paddingright="20" paddingleft="48"/>
+            </view>
+        </activity>
+    </package>
+    <package name="com.zhihu.android" enable="true" describe="知乎">
+        <activity name="com.zhihu.android.kmdetail.KMDetailActivity" policy="9">
+            <view name="" id="" path="bottom_layout:-1">
+                <view_policy range="2" policytype="padding"  paddingleft="10"  paddingright="10"/>
+            </view>
+        </activity>
+        <activity name="com.zhihu.android.app.edulive.room.ui.EduLiveRoomActivity" policy="9">
+            <view name="" id="" path="chatHeaderView:-1">
+                <view_policy range="1" policytype="padding"  paddingright="30"/>
+            </view>
+        </activity>
+    </package>
+    <package name="com.smile.gifmaker" enable="true" describe="快手">
+        <activity name="com.kuaishou.live.core.basic.activity.LiveSlideActivity" policy="9">
+            <view name="" id="" path="live_new_bottom_bar_container/live_bottom_bar_vc_container/LiveAudienceBottomBarLayout:-1">
+                <view_policy range="1" policytype="padding"  paddingright="8" resetflag="1"/>
+            </view>
+            <view name="" id="" path="live_play_clearable_layer/top_bar/live_audience_landscape_status_bar_layout:-1">
+                <view_policy range="1" policytype="padding"  paddingright="20"/>
+            </view>
+        </activity>
+        <activity name="com.yxcorp.gifshow.detail.PhotoDetailActivity" policy="9">
+            <view name="" id="" path="live_new_bottom_bar_container/live_bottom_bar_vc_container/LiveAudienceBottomBarLayout:-1">
+                <view_policy range="1" policytype="padding"  paddingright="8" resetflag="1"/>
+            </view>
+            <view name="" id="" path="live_play_clearable_layer/top_bar/live_audience_landscape_status_bar_layout:-1">
+                <view_policy range="1" policytype="padding"  paddingright="20"/>
+            </view>
+        </activity>
+    </package>
+</packageRules>

@@ -1,0 +1,27 @@
+precision highp uimage2D;
+
+layout (location = 0) uniform ivec2 bufferSize;
+layout(binding = 1, r32ui) writeonly uniform uimage2D rw_game_motion_vector_field_x;
+
+
+
+void StoreGameMotionVectorFieldX(in ivec2 iPxPos, in uint val) 
+{
+    imageStore(rw_game_motion_vector_field_x, iPxPos, uvec4(val, 0, 0, 0));
+}
+
+void setupFrameinterpolationResources(ivec2 iPxPos) 
+{
+    StoreGameMotionVectorFieldX(iPxPos, 0u);
+}
+
+
+layout(local_size_x = 8, local_size_y = 8) in;
+void main() 
+{
+    ivec2 iPxPos = ivec2(gl_GlobalInvocationID.xy);
+    if (all(lessThan(iPxPos, bufferSize)))
+    {
+        setupFrameinterpolationResources(iPxPos);
+    }
+}

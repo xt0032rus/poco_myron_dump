@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <!-- Lens in Camera Feature Flag -->
+    <feature name="com.google.lens.feature.CAMERA_INTEGRATION" />
+    <!-- Lens in Gallery Feature Flag -->
+    <feature name="com.google.lens.feature.IMAGE_INTEGRATION" />
+</permissions>

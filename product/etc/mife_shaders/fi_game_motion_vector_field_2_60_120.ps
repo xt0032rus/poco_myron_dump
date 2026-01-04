@@ -1,0 +1,112 @@
+precision highp int;
+#ifdef Qual_VENDOR
+precision highp uint;
+#endif
+precision highp uimage2D;
+precision highp float;
+//precision mediump float; //system crash
+//precision lowp float;  // game crash
+
+   
+    
+layout(location=0) in highp vec2 in_TEXCOORD0;
+layout(location=0) out lowp vec4 out_Target0;
+layout (location = 1) uniform highp vec4 renderSize_inv_renderSize;
+
+layout(binding = 0) uniform mediump sampler2D r_previous_interpolation_source;
+layout(binding = 1) uniform mediump sampler2D r_current_interpolation_source;
+layout(binding = 2) uniform mediump sampler2D ui_texture;
+layout(binding = 0, r32ui) readonly uniform uimage2D rw_game_motion_vector_field_x;
+
+
+
+
+const mediump float FFX_FRAMEINTERPOLATION_EPSILON = 1e-3;
+
+const uint MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT = 32u;
+
+// Make sure all bit counts add up to MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT
+const uint MOTION_VECTOR_FIELD_VECTOR_COEFFICIENT_BIT_COUNT = 16u;
+const uint MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT = 5u;
+const uint MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT = 10u;
+const uint MOTION_VECTOR_PRIMARY_VECTOR_INDICATION_BIT_COUNT = 1u;
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT = 10u;
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT = 9u;
+
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_MASK = 0xFFE00000u; //21bit
+
+const uint MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT = (1U << (MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT - 1u));
+
+const uint PRIORITY_LOW_MAX = (1U << MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT) - 1u;
+const uint PRIORITY_HIGH_MAX = (1U << MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT) - 1u;
+const uint MOTION_VECTOR_X_MAX = (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT) - 1u;
+const uint MOTION_VECTOR_Y_MAX = (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT) - 1u;
+const highp float INV_MOTION_VECTOR_X_MAX = 1.0 / float(MOTION_VECTOR_X_MAX);
+const highp float INV_MOTION_VECTOR_Y_MAX = 1.0 / float(MOTION_VECTOR_Y_MAX);
+const highp float MOTION_VECTOR_X_MAX_F = float(MOTION_VECTOR_X_MAX);
+const highp float MOTION_VECTOR_Y_MAX_F = float(MOTION_VECTOR_Y_MAX);
+
+const uint MOTION_VECTOR_X_OFFSET = MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT + 1U;
+const uint PRIORITY_LOW_OFFSET = MOTION_VECTOR_FIELD_VECTOR_COEFFICIENT_BIT_COUNT;
+const uint PRIORITY_HIGH_OFFSET = PRIORITY_LOW_OFFSET + MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT;
+const uint PRIMARY_VECTOR_INDICATION_OFFSET = PRIORITY_HIGH_OFFSET + MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT;
+
+///////////////////////////////////////////////////////
+
+bool PackedVectorFieldEntryIsPrimary(uint packedEntry) 
+{
+    return ((packedEntry & MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT) != 0u);
+}
+
+vec2 UnPackMotionVector(uint packedGameFieldMv)
+{
+    vec2 fMotionVector;
+    fMotionVector.x = float((packedGameFieldMv >> MOTION_VECTOR_X_OFFSET) & MOTION_VECTOR_X_MAX) * INV_MOTION_VECTOR_X_MAX;
+    fMotionVector.x *= (((packedGameFieldMv >> MOTION_VECTOR_X_OFFSET) & (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT)) > 0U ? 1.0 : -1.0);
+    fMotionVector.y = float((packedGameFieldMv) & MOTION_VECTOR_Y_MAX) * INV_MOTION_VECTOR_Y_MAX;
+    fMotionVector.y *= ((packedGameFieldMv & (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT)) > 0U ? 1.0 : -1.0);
+    //fMotionVector = fMotionVector * vec2(2.0) - vec2(1.0);
+    return fMotionVector;
+}
+
+uint LoadGameFieldMv(ivec2 iPxSample) 
+{
+    uint packedX = imageLoad(rw_game_motion_vector_field_x, iPxSample).r;
+    return packedX;
+}
+
+
+
+const ivec2 offset_array[4] = ivec2[4](ivec2(-1, 0), ivec2(1, 0), ivec2(0, 1), ivec2(0, -1));
+void computeGameFieldMvs(ivec2 iPxPos) 
+{
+    uint packedGameFieldMv = LoadGameFieldMv(iPxPos);
+    vec3 fColor = vec3(0.0);
+    if(PackedVectorFieldEntryIsPrimary(packedGameFieldMv) == false)
+    {
+        fColor = textureLod(r_previous_interpolation_source, in_TEXCOORD0, 0.0).rgb;
+    }
+    else
+    {
+        highp vec2 fMotionVector = UnPackMotionVector(packedGameFieldMv);
+        highp vec2 cur_fUv = in_TEXCOORD0 - fMotionVector;// + renderSize_inv_renderSize.zw * normalize(fMotionVector);
+        fColor = textureLod(r_current_interpolation_source, cur_fUv, 0.0).rgb;
+    }
+        vec4 ui_color = texture(ui_texture, in_TEXCOORD0).rgba;
+    fColor = fColor * (1.0 - ui_color.a) + ui_color.rgb;
+    
+    vec2 centerPos = vec2(100, 100);
+    float distance = length(centerPos - vec2(iPxPos));
+    if(distance < 30.0)
+    {
+        //fColor = vec3(0.0,0.0,1.0);
+    }
+    
+    out_Target0 =  vec4(fColor, 1.0);
+}
+
+void main() 
+{
+    ivec2 iPxPos = ivec2(in_TEXCOORD0 * renderSize_inv_renderSize.xy);
+    computeGameFieldMvs(iPxPos);
+}

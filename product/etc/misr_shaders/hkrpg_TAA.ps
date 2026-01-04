@@ -1,0 +1,40 @@
+#ifdef GL_EXT_shader_texture_lod
+#extension GL_EXT_shader_texture_lod : enable
+#endif
+
+precision highp float;
+precision highp int;
+#define HLSLCC_ENABLE_UNIFORM_BUFFERS 1
+#if HLSLCC_ENABLE_UNIFORM_BUFFERS
+#define UNITY_UNIFORM
+#else
+#define UNITY_UNIFORM uniform
+#endif
+#define UNITY_SUPPORTS_UNIFORM_LOCATION 1
+#if UNITY_SUPPORTS_UNIFORM_LOCATION
+#define UNITY_LOCATION(x) layout(location = x)
+#define UNITY_BINDING(x) layout(binding = x, std140)
+#else
+#define UNITY_LOCATION(x)
+#define UNITY_BINDING(x) layout(std140)
+#endif
+uniform 	vec4 _DepthBufferOrCopy_TexelSize;
+uniform 	vec4 _MainTex_TexelSize;
+uniform 	vec4 _FinalBlendParameters;
+uniform 	mediump float _Sharpness;
+UNITY_LOCATION(0) uniform highp sampler2D _DepthBufferOrCopy;
+UNITY_LOCATION(1) uniform highp sampler2D _MainTex;
+UNITY_LOCATION(2) uniform highp sampler2D _HistoryTex;
+UNITY_LOCATION(3) uniform mediump sampler2D _CameraMotionVectorsTexture;
+UNITY_LOCATION(4) uniform mediump sampler2D _MotionMaskTexture;
+UNITY_LOCATION(5) uniform mediump sampler2D _MotionMaskHistoryTexture;
+in highp vec2 vs_TEXCOORD0;
+layout(location = 0) out mediump vec4 SV_Target0;
+mediump vec3 u_xlat10_1;
+void main()
+{
+    u_xlat10_1.xyz = textureLod(_MainTex, vs_TEXCOORD0.xy, 0.0).xyz;
+    SV_Target0.xyz = u_xlat10_1.xyz;
+    SV_Target0.w = 1.0;
+    return;
+}

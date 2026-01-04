@@ -1,0 +1,34 @@
+{
+    "title": "馥郁",
+    "titleResId": "wallpaper_Fragrant_title",
+    "cardType": 1,
+    "count": 4,
+    "slideCount": 4,
+    "randomOrder": false,
+    "wallpapers": [
+        {
+            "thumbPath": "./wallpaper_01.jpg",
+            "originPath": "./wallpaper_01.mp4",
+            "type": "videowallpaper",
+            "isSupportLoop": "false"
+        },
+        {
+            "thumbPath": "./wallpaper_02.jpg",
+            "originPath": "./wallpaper_02.mp4",
+            "type": "videowallpaper",
+            "isSupportLoop": "false"
+        },
+        {
+            "thumbPath": "./wallpaper_03.jpg",
+            "originPath": "./wallpaper_03.mp4",
+            "type": "videowallpaper",
+            "isSupportLoop": "false"
+        },
+        {
+            "thumbPath": "./wallpaper_04.jpg",
+            "originPath": "./wallpaper_04.mp4",
+            "type": "videowallpaper",
+            "isSupportLoop": "false"
+        }
+    ]
+}

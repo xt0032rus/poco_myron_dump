@@ -1,0 +1,104 @@
+
+#version 320 es
+
+precision highp float;  
+precision highp int;
+precision highp image2D;
+
+layout(rgba32f,  binding = 0) readonly uniform image2D r_input_motion_vectors;
+layout( binding = 1) uniform sampler2D r_input_depth;
+layout(rgba16f,  binding = 2) writeonly uniform image2D rw_dilated_depth;
+layout(rgba16f,  binding = 3) writeonly uniform image2D rw_dilated_motion_vectors;
+
+
+layout (location = 0) uniform vec2 inv_resolution;
+layout (location = 1) uniform ivec2 resolution;
+//layout (location = 2) uniform mat4 cur_inv_vp;
+//layout (location = 3) uniform mat4 prev_vp;
+layout (location = 2) uniform mat4 transform;
+
+float LoadInputDepth(ivec2 iPxPos) 
+{
+    vec2 uv = (vec2(iPxPos.xy)) * inv_resolution;
+    return textureLod(r_input_depth, uv, 0.0).r;
+}
+
+
+void StoreDilatedDepth(ivec2 iPxPos, vec4 fDepth) 
+{
+    imageStore(rw_dilated_depth, iPxPos, fDepth); 
+}
+
+
+vec2 LoadInputMotionVector(ivec2 iPxDilatedMotionVectorPos , float depthZ, inout bool is_movable_obj) 
+{
+    is_movable_obj = false;
+    if (all(lessThan(iPxDilatedMotionVectorPos.xy, resolution)))
+    {
+        vec3 srcMotionVector = imageLoad(r_input_motion_vectors, iPxDilatedMotionVectorPos).rgb;
+        if(srcMotionVector.z < 0.001)
+        {
+            vec2 uv = (vec2(iPxDilatedMotionVectorPos.xy)) * inv_resolution;
+            vec2 device = uv * vec2(2.0) - vec2(1.0);
+            vec4 prev_clip_pos = transform * vec4(device.xy, 2.0*depthZ - 1.0, 1.0);
+            vec2 prev_screen_pos = ((prev_clip_pos.xy / prev_clip_pos.w) + vec2(1.0))*vec2(0.5);
+            srcMotionVector.xy = prev_screen_pos - uv;
+        }
+        else
+        {
+            srcMotionVector.xy = (srcMotionVector.xy -vec2(4.999924e-01,4.999924e-01)) / vec2(2.495000e-01,2.495000e-01);
+            srcMotionVector.xy = srcMotionVector.xy / vec2(-2.0);
+            is_movable_obj = true;
+        }
+        return srcMotionVector.xy;
+    }
+    return vec2(0.0, 0.0);
+    
+}
+
+
+
+void StoreDilatedMotionVector(in ivec2 iPxPos, in vec4 fMotionVector)
+{
+    imageStore(rw_dilated_motion_vectors, iPxPos, fMotionVector); 
+}
+
+const ivec2 offset_array[4] = ivec2[4](ivec2(0, 0), ivec2(0, 1), ivec2(1, 1), ivec2(1, 0));
+layout(local_size_x = 8, local_size_y = 8) in;
+void main()
+{
+    ivec2 iPxLrPos = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 base_coord = iPxLrPos * 2;
+    if (all(lessThan(base_coord.xy, resolution)))
+    {
+
+        vec4 fDilatedDepth;
+        for(int i = 0; i < 4; i++)
+        {
+            fDilatedDepth[i] = LoadInputDepth(base_coord + offset_array[i]);
+        }
+        StoreDilatedDepth(iPxLrPos, fDilatedDepth);
+
+        vec4 fDilatedMotionVector1;
+        vec4 fDilatedMotionVector2;
+        bvec4 is_movable_obj;
+        fDilatedMotionVector1.rg = LoadInputMotionVector(base_coord, fDilatedDepth.r, is_movable_obj.x);
+        fDilatedMotionVector1.ba = LoadInputMotionVector(base_coord + offset_array[0], fDilatedDepth.g, is_movable_obj.y);
+        fDilatedMotionVector2.rg = LoadInputMotionVector(base_coord + offset_array[1], fDilatedDepth.b, is_movable_obj.z);
+        fDilatedMotionVector2.ba = LoadInputMotionVector(base_coord + offset_array[2], fDilatedDepth.a, is_movable_obj.w);
+        
+        if((is_movable_obj != bvec4(false)) && (is_movable_obj != bvec4(true)))
+        {
+            vec2 fDilatedMotionVector = fDilatedMotionVector1.xy * float(is_movable_obj.x) +  fDilatedMotionVector1.zw * float(is_movable_obj.y) + fDilatedMotionVector2.xy * float(is_movable_obj.z) + fDilatedMotionVector2.zw * float(is_movable_obj.w);
+            fDilatedMotionVector1.xy = fDilatedMotionVector;
+            fDilatedMotionVector1.zw = fDilatedMotionVector;
+            fDilatedMotionVector2.xy = fDilatedMotionVector;
+            fDilatedMotionVector2.zw = fDilatedMotionVector;
+        }
+        
+        ivec2 mv_store_coord = ivec2(iPxLrPos.x, iPxLrPos.y * 2);
+        StoreDilatedMotionVector(mv_store_coord, fDilatedMotionVector1);
+        StoreDilatedMotionVector(mv_store_coord + ivec2(0 , 1), fDilatedMotionVector2);
+        
+    }
+}

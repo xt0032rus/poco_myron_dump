@@ -1,0 +1,83 @@
+
+#version 320 es
+
+precision highp float;  
+precision highp int;
+precision highp image2D;
+
+layout(binding = 0) uniform sampler2D r_input_depth;
+layout(binding = 1) uniform sampler2D prev_input_depth;
+layout(binding = 2) uniform sampler2D prev_color;
+layout(binding = 3, rgba8) writeonly uniform image2D outputColor;
+
+
+
+layout (location = 0) uniform vec2 inv_resolution;
+layout (location = 1) uniform ivec2 resolution;
+layout (location = 2) uniform mat4 transform;
+layout (location = 3) uniform vec4 offset_size;
+
+float LoadInputDepth(ivec2 iPxPos) 
+{
+    vec2 uv = (vec2(iPxPos.xy)) * inv_resolution;
+    return textureLod(r_input_depth, uv, 0.0).r;
+}
+float LoadPrevDepth(ivec2 iPxPos)
+{
+    vec2 uv = (vec2(iPxPos.xy)) * inv_resolution;
+    return textureLod(prev_input_depth, uv, 0.0).r;
+}
+
+float LinearizeDepth(float depth) 
+{
+    return pow(depth, 10.0);
+    //float z = depth * 2.0 - 1.0;
+    //return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
+float LinearizeDepthAndScale(float depth)
+{
+    float depth = LinearizeDepth(depth);
+    return depth * 1000.0;
+}
+
+void StoreOcclusion(ivec2 iPxPos, ivec2 cur_screen_pos, bool occlussion, float depth , float original_depth) 
+{
+    vec2 uv = vec2(iPxPos) * inv_resolution;
+    vec4 color = textureLod(prev_color, uv, 0.0);
+    if(occlussion == false)
+    {
+        color.a = 0.0;
+    }
+    else
+    {
+        color.a = LinearizeDepth(depth);
+    }
+    imageStore(outputColor, cur_screen_pos - ivec2(offset_size.xy), color);
+}
+
+bool IsOcclussion(ivec2 iPxPos, float prev_depth, inout ivec2 cur_screen_pos , inout float testDepth, inout float original_depth)
+{
+    vec2 prev_uv = (vec2(iPxPos.xy)) * inv_resolution;
+    vec2 prev_device = prev_uv * vec2(2.0) - vec2(1.0);
+    vec4 cur_clip_pos = transform * vec4(prev_device.xy, prev_depth, 1.0);
+    cur_screen_pos = ivec2(((cur_clip_pos.xy / cur_clip_pos.w) + vec2(1.0))*vec2(0.5) * vec2(resolution));
+    float cur_scree_prj_depth = (cur_clip_pos.z / cur_clip_pos.w);
+    float cur_depth = LoadInputDepth(cur_screen_pos);
+    testDepth = cur_scree_prj_depth;
+    original_depth = cur_depth;
+    return  (cur_scree_prj_depth - cur_depth) > 0.001;
+}
+layout(local_size_x = 8, local_size_y = 8) in;
+void main()
+{
+    ivec2 iPxLrPos = ivec2(gl_GlobalInvocationID.xy) + ivec2(offset_size.xy);
+    if (all(lessThan(ivec2(gl_GlobalInvocationID.xy), ivec2(offset_size.zw))))
+    {
+        ivec2 cur_screen_pos;
+        float testDepth;
+        float original_depth;
+        bool is_occu = (IsOcclussion(iPxLrPos, LoadPrevDepth(iPxLrPos), cur_screen_pos, testDepth, original_depth));
+        StoreOcclusion(iPxLrPos, cur_screen_pos, is_occu, testDepth, original_depth);
+    }
+}

@@ -1,0 +1,21 @@
+<!--
+    Input:
+        device/xiaomi/myron/product/device_framework_compatibility_matrix/dvs/vendor_framework_compatibility_matrix.xml
+        vendor/novatek/system_novatek/vendor_framework_compatibility_matrix.xml
+-->
+<compatibility-matrix version="9.0" type="framework">
+    <hal format="aidl">
+        <name>vendor.dolby.dvs</name>
+        <interface>
+            <name>IDvs</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl">
+        <name>vendor.novatek.hardware.visdisplaysrv</name>
+        <interface>
+            <name>IVisdisplaysrv</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</compatibility-matrix>

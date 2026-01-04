@@ -1,0 +1,126 @@
+precision highp int;
+precision highp image2D;
+precision highp uimage2D;
+precision lowp float;
+
+layout(location=0) in highp vec2 in_TEXCOORD0;
+layout(location=0) out vec4 out_Target0;
+layout (location = 0) uniform ivec2 renderSize;
+layout (location = 1) uniform mat4 prev_to_cur;
+
+
+layout(binding = 0) uniform sampler2D r_previous_interpolation_source;
+layout(binding = 1) uniform sampler2D r_current_interpolation_source;
+layout(binding = 2) uniform sampler2D r_previous_depth;
+layout(binding = 3) uniform sampler2D r_current_depth;
+
+layout(binding = 0, r32ui) readonly uniform uimage2D r_game_motion_vector_field_x;
+
+
+
+const float FFX_FRAMEINTERPOLATION_EPSILON = 1e-3;
+
+const uint MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT = 32u;
+
+// Make sure all bit counts add up to MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT
+const uint MOTION_VECTOR_FIELD_VECTOR_COEFFICIENT_BIT_COUNT = 16u;
+const uint MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT = 5u;
+const uint MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT = 10u;
+const uint MOTION_VECTOR_PRIMARY_VECTOR_INDICATION_BIT_COUNT = 1u;
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT = 11u;
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT = 10u;
+
+const uint MOTION_VECTOR_FIELD_MOTION_VECTOR_MASK = 0xFFE00000u; //21bit
+
+const uint MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT = (1U << (MOTION_VECTOR_FIELD_ENTRY_BIT_COUNT - 1u));
+
+const uint PRIORITY_LOW_MAX = (1U << MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT) - 1u;
+const uint PRIORITY_HIGH_MAX = (1U << MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT) - 1u;
+const uint MOTION_VECTOR_X_MAX = (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_X_BIT_COUNT) - 1u;
+const uint MOTION_VECTOR_Y_MAX = (1U << MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT) - 1u;
+const highp float INV_MOTION_VECTOR_X_MAX = 1.0 / float(MOTION_VECTOR_X_MAX);
+const highp float INV_MOTION_VECTOR_Y_MAX = 1.0 / float(MOTION_VECTOR_Y_MAX);
+
+const uint MOTION_VECTOR_X_OFFSET = MOTION_VECTOR_FIELD_MOTION_VECTOR_Y_BIT_COUNT;
+const uint PRIORITY_LOW_OFFSET = MOTION_VECTOR_FIELD_VECTOR_COEFFICIENT_BIT_COUNT;
+const uint PRIORITY_HIGH_OFFSET = PRIORITY_LOW_OFFSET + MOTION_VECTOR_FIELD_PRIORITY_LOW_BIT_COUNT;
+const uint PRIMARY_VECTOR_INDICATION_OFFSET = PRIORITY_HIGH_OFFSET + MOTION_VECTOR_FIELD_PRIORITY_HIGH_BIT_COUNT;
+
+///////////////////////////////////////////////////////
+
+bool PackedVectorFieldEntryIsPrimary(uint packedEntry) 
+{
+    return ((packedEntry & MOTION_VECTOR_FIELD_PRIMARY_VECTOR_INDICATION_BIT) != 0u);
+}
+
+vec2 UnPackMotionVector(uint packedGameFieldMv)
+{
+    vec2 fMotionVector;
+    fMotionVector.x = float((packedGameFieldMv >> MOTION_VECTOR_X_OFFSET) & MOTION_VECTOR_X_MAX) * INV_MOTION_VECTOR_X_MAX;
+    fMotionVector.y = float((packedGameFieldMv) & MOTION_VECTOR_Y_MAX) * INV_MOTION_VECTOR_Y_MAX;
+    fMotionVector = fMotionVector * vec2(2.0) - vec2(1.0);
+    return fMotionVector;
+}
+
+uint LoadGameFieldMv(ivec2 iPxSample) 
+{
+    return imageLoad(r_game_motion_vector_field_x, iPxSample).r;    
+}
+
+void StoreFrameinterpolationOutput(in vec4 val)
+{
+    out_Target0 = val;
+}
+
+
+vec3 LoadCurrentBackbuffer(in vec2 uv)
+{
+    return texture(r_current_interpolation_source, uv).rgb;
+}
+
+
+
+
+
+vec2 LinearizeDepthAndScale(vec2 depth)
+{
+    mediump vec2 near = vec2(1.0); 
+    mediump vec2 far = vec2(1000.0);
+    mediump vec2 z = depth * vec2(2.0) - vec2(1.0);
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
+
+uvec2 getPriorityFactorFromViewSpaceDepth(mediump vec2 fViewSpaceDepthInMeters) 
+{
+    const vec2 near = vec2(1.0); 
+    const vec2 far = vec2( 1000.0);
+    const vec2 temp1 = near * far;
+    vec2 temp2 = fViewSpaceDepthInMeters *(near - far) + far;
+    fViewSpaceDepthInMeters = temp2 / (temp2 + temp1) * 2.0;
+    uvec2 uPriorityFactor = uvec2( fViewSpaceDepthInMeters * vec2(PRIORITY_HIGH_MAX));
+    return max( uvec2(1u), uPriorityFactor);
+}
+
+
+void computeFrameinterpolation(ivec2 iPxPos)
+{
+    vec3 fColor = vec3(0.0);
+    float flag = 1.0;
+    fColor = textureLod(r_previous_interpolation_source, in_TEXCOORD0, 0.0).rgb;
+    
+        vec2 centerPos = vec2(100, 100);
+        float distance = length(centerPos - vec2(iPxPos));
+        if(distance < 30.0)
+        {
+            //fColor = vec3(0.0,0.0,1.0);
+        }
+    
+    StoreFrameinterpolationOutput(vec4(fColor, flag));
+}
+
+void main()
+{
+    ivec2 iPxPos = ivec2(in_TEXCOORD0 * vec2(renderSize));
+    computeFrameinterpolation(iPxPos);
+}

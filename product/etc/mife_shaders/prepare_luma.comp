@@ -1,0 +1,31 @@
+#version 320 es
+
+precision lowp float;  
+precision lowp uint;
+precision mediump int;
+precision mediump uimage2D;
+
+layout (location = 0) uniform mediump vec2 inv_renderSize;
+layout(binding = 0) uniform sampler2D r_current_interpolation_source;
+layout(r32ui, binding = 1) writeonly uniform uimage2D rw_optical_flow_input;
+vec3 LoadInputColor(ivec2 iPxHistory) 
+{
+    mediump vec2 uv = vec2(iPxHistory) * inv_renderSize;
+    return texture(r_current_interpolation_source, uv).rgb;
+}
+
+const  vec3 lum_weight = vec3(0.299, 0.587, 0.114);
+void PrepareLuma(ivec2 iGlobalId, int iLocalIndex) 
+{
+    ivec2 pos = iGlobalId * ivec2(2, 2);
+    vec3 inputColor = LoadInputColor(pos).rgb;
+    float  fY = dot(lum_weight, inputColor);
+    imageStore(rw_optical_flow_input, iGlobalId, uvec4(uint(fY * 255.0), 0, 0, 0));
+}
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+void main() 
+{
+    ivec2 iGlobalId = ivec2(gl_GlobalInvocationID.xy);
+    int iLocalIndex = int(gl_LocalInvocationIndex);
+    PrepareLuma(iGlobalId, iLocalIndex);
+}

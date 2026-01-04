@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<cust_features>
+    <cust_feature>
+        <bool name="low_power_doze_enabled">true</bool>
+        <bool name="config_supported_aon_devices">true</bool>
+        <bool name="turbosched_check_is_special_topology">true</bool>
+    </cust_feature>
+</cust_features>

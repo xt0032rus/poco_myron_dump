@@ -1,0 +1,10 @@
+com.android.systemui
+com.miui.home
+com.android.settings
+com.android.permissioncontroller
+com.android.quicksearchbox
+com.miui.aod
+com.miui.huanji
+com.miui.newhome
+com.miui.personalassistant
+com.miui.securitycenter
