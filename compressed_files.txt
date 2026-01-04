@@ -1,0 +1,11 @@
+modem.img.xz
+system_ext/priv-app/Settings/Settings.apk.xz
+odm/lib64/libarcsoft_turbo_fusion_mfnr.so.xz
+odm/firmware_qtvm/system.img.xz
+odm/etc/camera/ellc.bin.xz
+product/priv-app/MiuiCamera/MiuiCamera.apk.xz
+product/priv-app/MiAICR/MiAICR.apk.xz
+product/priv-app/MiuiGallery/MiuiGallery.apk.xz
+product/priv-app/GmsCore/GmsCore.apk.xz
+product/app/TrichromeLibrary64/TrichromeLibrary64.apk.xz
+recovery.img.xz

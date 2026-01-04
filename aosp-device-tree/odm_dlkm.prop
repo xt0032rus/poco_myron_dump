@@ -1,0 +1,7 @@
+# Miscellaneous
+ro.odm_dlkm.build.version.sdk_full=36.0
+ro.product.device_for_attestation=mivendor
+ro.product.manufacturer_for_attestation=Xiaomi
+ro.product.odm_dlkm.cert=
+ro.product.odm_dlkm.marketname=
+

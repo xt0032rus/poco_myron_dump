@@ -1,0 +1,7 @@
+# Miscellaneous
+ro.product.device_for_attestation=myron
+ro.product.manufacturer_for_attestation=Xiaomi
+ro.product.system_dlkm.cert=25102RKBEC
+ro.product.system_dlkm.marketname=REDMI K90 Pro Max
+ro.system_dlkm.build.version.sdk_full=36.0
+

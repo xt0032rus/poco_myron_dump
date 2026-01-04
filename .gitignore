@@ -1,0 +1,17 @@
+modem.img
+system_ext/priv-app/Settings/Settings.apk
+odm/lib64/libarcsoft_raw_sr.so
+odm/lib64/libarcsoft_turbo_fusion_mfnr.so
+odm/lib64/libarcsoft_turbo_hdr_raw.so
+odm/firmware_qtvm/system.img
+odm/etc/camera/ellc.bin
+odm/etc/camera/sd_unet.minn
+product/priv-app/MiuiCamera/MiuiCamera.apk
+product/priv-app/Velvet/Velvet.apk
+product/priv-app/MiAICR/MiAICR.apk
+product/priv-app/MiuiGallery/MiuiGallery.apk
+product/priv-app/GmsCore/GmsCore.apk
+product/app/TrichromeLibrary64/TrichromeLibrary64.apk
+product/app/MiMediaEditor/MiMediaEditor.apk
+product/app/WinPlay/WinPlay.apk
+recovery.img

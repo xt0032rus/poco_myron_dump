@@ -1,0 +1,10 @@
+ro.thermal.iec.enable=true
+ro.bluetooth.avrcp.skip.map.update=true
+ro.mi.os.custfeatureresolve=true
+ro.miui.build.region=cn
+persist.vendor.camera.gesture.emoji.support=1
+debug.media.video.frc=0
+ro.mi.os.version.publish=true
+ro.mi.os.version.code=3
+ro.mi.os.version.name=OS3.0
+ro.mi.os.version.incremental=OSZKOS.LITE.3.0.20.0.WPMCNXM

@@ -1,0 +1,2 @@
+require version-trustzone=TZ.XF.5.33-00048-KAANAPALI-1.121482.23
+require version-vendor=1765857286
